@@ -27,7 +27,7 @@ class TargetVideo(object):
             print("Downloading video...")
             video.download([self.video_url])
 
-    def download_captions(self) -> None:
+    def download_captions(self, download: bool = False) -> None:
         """
         Downloads the video captions for a given video URL, specifically in English.
         Prefers manually uploaded captions if available; otherwise, downloads auto-generated captions.
@@ -38,7 +38,7 @@ class TargetVideo(object):
         """
         # Step 1: Extract video info without downloading
         with yt_dlp.YoutubeDL() as ydl:
-            info = ydl.extract_info(self.video_url, download=False)
+            info = ydl.extract_info(self.video_url, download=download)
 
         # Step 2: Check and download manually uploaded captions
         if 'subtitles' in info and 'en' in info['subtitles']:
@@ -46,6 +46,7 @@ class TargetVideo(object):
                 'writesubtitles': True,  # Enable manual subtitles download
                 'subtitleslangs': ['en'],  # Specify English
                 'skip_download': True,  # Do not download video
+                'outtmpl': self.title  # Use the title provided in __init__
             }
             with yt_dlp.YoutubeDL(options) as ydl:
                 print("Downloading manually uploaded captions...")
@@ -58,6 +59,7 @@ class TargetVideo(object):
                 'writeautomaticsub': True,  # Enable auto-generated subtitles download
                 'subtitleslangs': ['en'],  # Specify English
                 'skip_download': True,  # Do not download video
+                'outtmpl': self.title  # Use the title provided in __init__
             }
             with yt_dlp.YoutubeDL(options) as ydl:
                 print("Downloading auto-generated captions...")
