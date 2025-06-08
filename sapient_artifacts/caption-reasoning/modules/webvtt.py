@@ -2,7 +2,9 @@
 import os
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Dict
+
+from .conversation_parser import ConversationParser
 
 
 class WebVTT(object):
@@ -21,7 +23,7 @@ class WebVTT(object):
 
         Args:
             file_path (str): Full path to the .vtt file.
-            strip_headers (bool): If True, removes the WebVTT header from the content.
+            strip_headers (bool): If True, the WebVTT header from the content is removed.
 
         Raises:
             FileNotFoundError: If the specified file does not exist or is not a file.
@@ -39,7 +41,7 @@ class WebVTT(object):
         Extracts only the caption text from the WebVTT file, excluding any other content.
 
         Args:
-            strip_headers (bool): If True, removes the WebVTT header before extracting captions.
+            strip_headers (bool): If True, the WebVTT header before extracting captions is removed.
 
         Returns:
             str: The caption text extracted from the WebVTT file.
@@ -81,6 +83,27 @@ class WebVTT(object):
 
         with open(file_path, encoding='utf-8') as webvtt_file:
             self.content = webvtt_file.read()
+
+    @staticmethod
+    def parse_speakers_from_webvtt(webvtt_instance, speaker_patterns: Optional[List[str]] = None) -> List[Dict[str, str]]:
+        """
+        Extension method to parse speakers from a WebVTT instance.
+
+        Args:
+            webvtt_instance: Instance of your WebVTT class
+            speaker_patterns: Optional list of speaker patterns to look for
+
+        Returns:
+            List of conversation segments with speaker names and text
+        """
+        # Get cleaned caption text
+        caption_text = webvtt_instance.get_only_captions_text(strip_headers=True)
+
+        # Parse conversation
+        parser = ConversationParser(speaker_patterns)
+        segments = parser.parse_conversation(caption_text)
+
+        return segments
 
     def strip_header(self):
         """
